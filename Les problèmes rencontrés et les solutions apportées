@@ -1,0 +1,16 @@
+Les problèmes rencontrés et les solutions apportées
+
+Premier problème
+Le premier gros problème était lorsque j’essayais de copier les données du S3 pour récupérer la table Jobs_posting. Une erreur apparaissait, indiquant que ma table Jobs_posting avait 25 colonnes, alors que le fichier CSV en contenait 27.
+J’ai alors utilisé ce lien : https://snowflake-lab-bucket.s3.amazonaws.com/job_postings.csv, ce qui m’a permis de télécharger le fichier CSV et de l’ouvrir pour analyse.
+Je me suis rendu compte qu’il manquait deux colonnes : med_salary et min_salary. Je les ai donc ajoutées lors de la création de la table Jobs_posting.
+
+Deuxième problème
+Le deuxième gros problème concernait la copie des fichiers JSON. Contrairement aux fichiers CSV qui sont simples à importer, les fichiers JSON posaient des difficultés.
+Après plusieurs recherches et tests de différentes méthodes pour importer les données JSON, une seule a fonctionné : il fallait créer une table intermédiaire avec une seule colonne de type VARIANT pour pouvoir stocker le contenu brut du JSON. En effet, le JSON est importé sous forme de texte brut dans une seule colonne.
+Ensuite, on utilise la commande COPY INTO pour copier les données dans cette table intermédiaire, puis on transforme le contenu JSON en colonnes SQL dans la table finale à l’aide d’un simple SELECT.
+Enfin, on supprime (DROP) la table intermédiaire afin de garder un environnement propre.
+
+Troisième problème
+Le troisième problème est survenu lors de l’analyse des données. On s’est rendu compte que la colonne company_name de la table Jobs_posting ne contenait pas le nom de l’entreprise, mais plutôt son identifiant (ID). De plus, cet ID était enregistré avec un .0 à la fin, ce qui empêchait la jointure avec la table Companies.
+J’ai donc utilisé la fonction TRY_CAST pour supprimer la partie .0 et éviter les erreurs si certaines valeurs n’étaient pas valides.
